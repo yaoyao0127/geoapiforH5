@@ -68,6 +68,10 @@
 		}
 		var watchID;
 		function start(){
+			h=0;
+			m=0;
+			s=0;
+			time=setInterval("startTime()",1000);
 			navigator.geolocation.getCurrentPosition(showPosition);
 			watchID=navigator.geolocation.watchPosition(showPosition,showError,options);
 		}
@@ -101,6 +105,7 @@
 		};
 		function stop(){
 			navigator.geolocation.clearWatch(watchID);
+			clearInterval(timer);
 		}
 		var path=[];
 		var center;
@@ -116,6 +121,32 @@
 				strokeColor:"#00FF00",
 				strokeWeight:10
 			});
+		}
+		var time=document.getElementById("time");
+		var h=0;
+		var m=0;
+		var s=0;
+		var timer;
+		function startTime(){
+			s=parseInt(s);
+			m=parseInt(m);
+			h=parseInt(h);
+			s++;
+			if(s==60){
+				s=0;
+				m++;
+			}
+			if(m==60){
+				m=0;
+				h++;
+			}
+			if(h<10)
+				h="0"+h;
+			if(m<10)
+				m="0"+m;
+			if(s<10)
+				s="0"+s;
+			time.innerHtml=h+":"+m+":"+s;
 		}
 	</script>
 	</body>
