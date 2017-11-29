@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>跑步记录功能</title>
+		<style>
+			div{
+				text-align:left;
+				margin；auto;
+				padding:10px;
+			}
+			.center{
+				text-align:center;
+			}
+		</style>
+	</head>
+	<body>
+		<h3>跑步记录功能</h3>
+		<hr/>
+		<div>
+		<ul>
+			<li>开始时间：<span id="start_time"></span></li>
+			<li>完成时间：<span id="end_time"></span></li>
+			<li>总距离：<span id="distance"></span></li>
+			
+		</ul>
+		<h4>详细信息</h4>
+		<ul>
+			<li>经度：<span id="long"></span></li>
+			<li>纬度：<span id="lat"></span></li>
+			<li>位置精确度：<span id="acc"></span></li>
+			<li>海拔高度：<span id="alt"></span></li>
+			<li>速度：<span id="speed"></span></li>
+		<ul>
+		<div class="center">
+			<button id="btn" onclick="toggleBtn()">开始记录</button>
+		</div>
+		</div>
+	<script>
+		var oldLong;
+		var oldLat;
+		var currentLong;
+		var currentLat;
+		function getLocation(){
+			if(navigator.geolocation){
+				var watchID=navigator.geolocation.watchPosition(showPosition,showError,options);
+			}else{
+				alert("抱歉，您的浏览器不支持H5地理定位API");
+			}
+		}
+		function showPosition(position){
+		//更新经维度数据，为了计算运动距离，所以保留新旧数据
+			if(currentLong!=null && currentLat!=null){
+			oldLong=currentLong;
+			oldLat=currentLat;
+			}
+			currentLong=position.coords.longitude;
+			currentLat=position.coords.longitude;
+		//更新经度
+			var long=document.getElementById("long");
+			long.innerHtml=currentLong;
+		//更新纬度
+			var lat=document.getElementById("lat");
+			lat.innerHtml=currentLat;
+		//更新位置精度
+			var acc=document.getElementById("acc");
+			acc.innerHtml=position.coords.accuracy;
+		//更新海拔高度
+			var alt=document.getElementById("alt");
+			alt.innerHtml=position.coords.altitude;
+		//更新速度
+			var speed=document.getElementById("speed");
+			speed.innerHtml=position.coords.speed;
+			if(oldLat!=null&&oldLong!=null){
+			var m=getDistance(currentLat,currentLong,oldLat,oldLong)
+			var lastDistance=document.getElementById("distance").innerHtml;
+			document.getElementById("distance").innerHtml=parseFloat(lastDistance)+m;
+			}
+		}
+		function showError(error){
+			switch(error.code){
+				case error.PERMISSION_DENIED:
+					alert("用户拒绝了地理定位的请求");
+					break;
+				case error.POSITION_UNAVAILABLE:
+					alert("位置信息不可用");
+					break;
+				case error.TIMEOUT:
+					alert("请求超时");
+					break;
+				case error.UNKNOWN_ERROR:
+					alert("未知错误发生");
+					break;
+			}
+		}
+		var options={
+			enableHighAccuracy:true,
+			timeout:2000,
+			maximunAge:2000
+		};
+		var isRunning=false;//声明变量为当前运动状态
+		var start_time=document.getElementById("start_time");
+		var end_time=document.getElementById("end_time");
+		function toggleBtn(){
+			var btn=document.getElementById("btn");
+			//开始运动
+			if(!isRunning){
+				var now=new Date();
+				start_time.innerHtml=now.toLocaleString();
+				end_time.innerHtml="";
+				isRunning=true;
+				btn.innerHtml="结束运动";
+				document.getElementById("distance").innerHtml="0";
+				getLocation();	
+			}
+			//结束运动
+			if(isRunning){
+				var now=new Date();
+				end_time.innerHtml=now.toLocaleString();
+				isRunning=false;
+				btn.innerHtml="开始运动";
+			}
+		}
+		//角度转弧度
+		function toRadians(degree){
+			return degree*Math.PI/180;
+		}
+		function getDistance(lat1,long1,lat2,long2){
+		var R=6371;//地球半径
+		var deltaLat=toRadians(lat2-lat1);
+		var deltaLong=toRadians(long2-long1);
+		lat1=toRadians(lat1);
+		lat2=toRadians(lat2);
+		var h=Math.sin(deltaLat/2)*Math.sin(deltaLat/2)+Math.cos(lat1)*Math.cos(lat2)*Math.sin(deltaLong/2)*Math.sin(deltaLong/2);
+		var d=2*R*Math.asin(Math.sqrt(h));
+		return d;
+		}
+	</script>
+	</body>
+</html>
